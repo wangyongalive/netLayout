@@ -222,19 +222,19 @@
       },
       guiInit() {
         let self = this;
-        let layers = {第一层: true, 第二层: true, 第三层: true};
+        let layers = {第0层: true, 第1层: true, 第2层: true};
         const gui = new dat.GUI();
-        gui.add(layers, '第一层').onChange(value => {
+        gui.add(layers, '第0层').onChange(value => {
           self.camera.layers.toggle(0);
           self.lableToggle(0, value);
           self.lineToggle(0, value);
         });
-        gui.add(layers, '第二层').onChange(value => {
+        gui.add(layers, '第1层').onChange(value => {
           self.camera.layers.toggle(1);
           self.lableToggle(1, value);
           self.lineToggle(1, value);
         });
-        gui.add(layers, '第三层').onChange(value => {
+        gui.add(layers, '第2层').onChange(value => {
           self.camera.layers.toggle(2);
           self.lableToggle(2, value);
           self.lineToggle(2, value);
