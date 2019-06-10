@@ -12,7 +12,9 @@
   import Stats from 'stats-js';
   import * as dat from 'dat.gui';
   import * as d3 from 'd3';
-  import {scaleOrdinal, schemeCategory20} from 'd3'
+  import data1 from '../../static/lnode2';
+  import data2 from '../../static/lnode2';
+  import data3 from '../../static/lnode2';
 
   export default {
     name: 'webgl',
@@ -41,10 +43,31 @@
       this.color = this.getColor();
       this.labelRenderer = null;
       this.init();
-      this.computed();
+
+      console.time('global')
+
+      // this.computed();
+
+      // this.gData1 = JSON.parse(localStorage.data1);
+      // this.gData2 = JSON.parse(localStorage.data2);
+      // this.gData3 = JSON.parse(localStorage.data3);
+      //
+      // this.addObj(JSON.parse(localStorage.data1), 0);
+      // this.addObj(JSON.parse(localStorage.data2), 1);
+      // this.addObj(JSON.parse(localStorage.data3), 2);
+      // [{"value": 0, "isChecked": true, "name": "全部"}, {"value": 1, "isChecked": false, "name": "链路"}, {
+      //   "value": 2,
+      //   "isChecked": false,
+      //   "name": "网络"
+      // }, {"value": 3, "isChecked": false, "name": "应用"}]
+
+      this.addObj(data1, 0, "链路");
+      this.addObj(data2, 1, "网络");
+      this.addObj(data3, 2, "应用");
       this.statsInit();
       this.animate();
       this.guiInit();
+      console.timeEnd('global')
     },
     methods: {
       init() {
@@ -64,8 +87,8 @@
         this.camera.layers.enable(2);
         this.camera.layers.enable(3);
         this.camera.position.z = 2299;
-        this.camera.position.x = -1906;
-        this.camera.position.y = -280;
+        this.camera.position.x = 0;
+        this.camera.position.y = 0;
         // this.camera.lookAt({x: 0, y: 0, z: 0});
         this.camera.lookAt(this.scene.position);
 
@@ -85,7 +108,7 @@
         });
         this.renderer.setClearColor(new THREE.Color(0x303030));
         this.renderer.setSize(width, height);
-        this.renderer.setPixelRatio(window.devicePixelRatio);//为了兼容高清屏幕
+        this.renderer.setPixelRatio(window.devicePixelRatio); //为了兼容高清屏幕
         document.getElementById("WebGL-output").appendChild(self.renderer.domElement);
 
         // label渲染器
@@ -113,11 +136,11 @@
         window.addEventListener('resize', this.onWindowResize, false);
         document.addEventListener('mousemove', this.onDocumentMouseMove, false);
       },
-      addObj(data, index) {
+      addObj(data, index, content) {
         let self = this;
         // 添加圆
         // 几何体  材质(设置颜色 透明度等 transparent要设置为true才能有效果)
-        let geometrySphere = new THREE.SphereGeometry(10, 10, 10);
+        let geometrySphere = new THREE.SphereGeometry(5, 5, 10);
         data.nodes.forEach(item => {
           let circle = new THREE.Mesh(geometrySphere, new THREE.MeshLambertMaterial({
             color: self.color(index),
@@ -125,7 +148,7 @@
             transparent: true
           }));
           circle.layers.set(index);
-          circle.position.set(item.x, item.y, index * 500);
+          circle.position.set(item.x * 100, item.y * 100, index * 500);
           this.scene.add(circle);
         });
 
@@ -140,8 +163,10 @@
           let color1 = new THREE.Color(0x0000FF), color2 = new THREE.Color(0xFF0000);
           // 声明一个几何体 给几何体添加位置节点和颜色
           let geometry = new THREE.Geometry();
-          geometry.vertices.push(new THREE.Vector3(item.source.x, item.source.y, index * 500));
-          geometry.vertices.push(new THREE.Vector3(item.target.x, item.target.y, index * 500));
+          // geometry.vertices.push(new THREE.Vector3(item.source.x * 100, item.source.y * 100, index * 500));
+          // geometry.vertices.push(new THREE.Vector3(item.target.x * 100, item.target.y * 100, index * 500));
+          geometry.vertices.push(new THREE.Vector3(item.x1 * 100, item.y1 * 100, index * 500));
+          geometry.vertices.push(new THREE.Vector3(item.x2 * 100, item.y2 * 100, index * 500));
           geometry.colors.push(color1, color2);
           let line = new THREE.Line(geometry, material);
           line.layers.set(index);
@@ -157,19 +182,22 @@
         let planeGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
         let plane = new THREE.Mesh(planeGeometry, new THREE.MeshLambertMaterial({
           color: 0x202020,
-          // opacity: 0.5,
-          // transparent: true,
+          opacity: 0.5,
+          transparent: true,
           side: THREE.DoubleSide//两面可见
         }));
         plane.position.x = 0;
         plane.position.y = 0;
         plane.position.z = index * 500;
+        plane.name = 'plane';
+        plane.setopacity = 0.5;
         plane.layers.set(index);
         this.scene.add(plane);
         // label
         let earthDiv = document.createElement('div');
         earthDiv.className = `label th${index}`;
-        earthDiv.textContent = `第${index}层`;
+        // earthDiv.textContent = `第${index}层`;
+        earthDiv.textContent = `${content}`;
         earthDiv.style.marginTop = '-1em';
         let earthLabel = new CSS2DObject(earthDiv);
         earthLabel.position.set(0, 0, 0);
@@ -195,8 +223,13 @@
               self.InterSelected.material.opacity = self.InterSelected.currentOpacity;
 
             self.InterSelected = intersects[0].object;
-            self.InterSelected.currentOpacity = self.InterSelected.material.opacity;
-            self.InterSelected.material.opacity = 1;
+            if (self.InterSelected.name == 'plane') {
+              self.InterSelected.currentOpacity = self.InterSelected.setopacity;
+              self.InterSelected.material.opacity = self.InterSelected.setopacity;
+            } else {
+              self.InterSelected.currentOpacity = self.InterSelected.material.opacity;
+              self.InterSelected.material.opacity = 1;
+            }
           }
         } else { // 没有目标被选中
           if (self.InterSelected) // 变为原来的样式
@@ -204,12 +237,18 @@
           self.InterSelected = null;
         }
         /*交互结束*/
-        if (self.flag && self.forceSate[0] && self.forceSate[1] && self.forceSate[2]) {
+        // if (self.flag && self.forceSate[0] && self.forceSate[1] && self.forceSate[2]) {
+        if (self.flag) {
           self.flag = false;
           // 分别求相交的数据集合 并绘制出线
-          self.commonNode(self.gData1, self.gData2);
-          self.commonNode(self.gData1, self.gData3);
-          self.commonNode(self.gData2, self.gData3);
+          // console.timeEnd('global');
+          // self.commonNode(self.gData1, self.gData2);
+          // self.commonNode(self.gData1, self.gData3);
+          // self.commonNode(self.gData2, self.gData3);
+          self.commonNode(data1, data2);
+          self.commonNode(data1, data3);
+          self.commonNode(data2, data3);
+
         }
         self.renderer.render(self.scene, self.camera);
         self.labelRenderer.render(self.scene, self.camera);
@@ -222,19 +261,20 @@
       },
       guiInit() {
         let self = this;
-        let layers = {第0层: true, 第1层: true, 第2层: true};
+        // let layers = {第0层: true, 第1层: true, 第2层: true};
+        let layers = {链路: true, 网络: true, 应用: true};
         const gui = new dat.GUI();
-        gui.add(layers, '第0层').onChange(value => {
+        gui.add(layers, '链路').onChange(value => {
           self.camera.layers.toggle(0);
           self.lableToggle(0, value);
           self.lineToggle(0, value);
         });
-        gui.add(layers, '第1层').onChange(value => {
+        gui.add(layers, '网络').onChange(value => {
           self.camera.layers.toggle(1);
           self.lableToggle(1, value);
           self.lineToggle(1, value);
         });
-        gui.add(layers, '第2层').onChange(value => {
+        gui.add(layers, '应用').onChange(value => {
           self.camera.layers.toggle(2);
           self.lableToggle(2, value);
           self.lineToggle(2, value);
@@ -295,6 +335,7 @@
             }))
         };
 
+
         // 分别使用力导向图
         self.forceLayout(self.gData1, 0);
         self.forceLayout(self.gData2, 1);
@@ -312,6 +353,7 @@
             self.addObj(data, index);
             simulation.stop(); // 停止力模拟
             self.forceSate[index] = true;
+            localStorage[`data${index + 1}`] = JSON.stringify(self[`gData${index + 1}`]);
           }
         };
         simulation
@@ -368,7 +410,6 @@
       },
       /*切换线条*/
       lineToggle(index, value) {
-        console.log(index);
         let self = this;
         self.scene.children.forEach(item => {
           if (item.name.includes(`${index}`)) {
@@ -390,7 +431,7 @@
     z-index: 0; /* to not conflict with dat.gui */
   }
 
-  #WebGL-output >>> .label {
+  #WebGL-output >>> .labelDiv {
     color: #FFF;
     font-family: sans-serif;
     padding: 2px;

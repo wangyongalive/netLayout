@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="https://cdn.bootcss.com/d3/3.5.17/d3.js"></script>
+</head>
+<body>
+<script>
+  d3.json('node.json', function (err, data) {
+    d3.json('node2.json', function (err2, data2) {
+      d3.json('node3.json', function (err3, data3) {
+        let a = data.nodes.map(item=>item.id);
+        let b = data2.nodes.map(item=>item.id);
+        let c = data3.nodes.map(item=>item.id);
+        let aSet = new Set(a);
+        let bSet = new Set(b)
+        let cSet = new Set(c)
+        let intersection = Array.from(new Set(b.filter(v => cSet.has(v))))
+        console.log(intersection);
+      })
+    })
+  })
+</script>
+</body>
+</html>
