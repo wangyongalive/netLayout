@@ -40,7 +40,7 @@
     "postcss-url": "^7.2.1",
     "rimraf": "^2.6.0",
     "semver": "^5.3.0",
-    "shelljs": "^0.7.6",
+    "shelljs": "^0.8.5",
     "stats-js": "^1.0.0",
     "three": "^0.103.0",
     "three-css2drender": "^1.0.0",
